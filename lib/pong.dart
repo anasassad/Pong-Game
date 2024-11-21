@@ -9,14 +9,34 @@ class Pong extends StatefulWidget {
   State<Pong> createState() => _PongState();
 }
 
-class _PongState extends State<Pong> {
+class _PongState extends State<Pong> with TickerProviderStateMixin {
   late double width;
   late double height;
-  double posX = 0;
-  double posY = 0;
+  late double posX;
+  late double posY;
   double batWidth = 0;
   double batHeight = 0;
   double batPosition = 0;
+
+  late Animation<double> animation;
+  late AnimationController animationController;
+
+  @override
+  void initState() {
+    posX = 0;
+    posY = 0;
+    animationController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 3));
+    animation = Tween<double>(begin: 0, end: 100).animate(animationController);
+    animation.addListener(() {
+      setState(() {
+        posX++;
+        posY++;
+      });
+    });
+    animationController.forward();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +48,7 @@ class _PongState extends State<Pong> {
       batHeight = height / 50;
       return Stack(
         children: [
-          const Positioned(top: 0, child: Ball()),
+          Positioned(top: posY, left: posX, child: const Ball()),
           Positioned(bottom: 0, child: Bat(batWidth, batHeight))
         ],
       );
