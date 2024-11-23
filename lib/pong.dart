@@ -27,16 +27,24 @@ class _PongState extends State<Pong> with TickerProviderStateMixin {
   Direction vDir = Direction.down;
   Direction hDir = Direction.right;
 
-  checkBoundaries() {
+  void checkBoundaries() {
+    double diameter = 50;
     if (posX <= 0 && hDir == Direction.left) {
       hDir = Direction.right;
     }
-    if (posX >= width - 50 && hDir == Direction.right) {
+    if (posX >= width - diameter && hDir == Direction.right) {
       hDir = Direction.left;
     }
 
-    if (posY >= height - 50 && vDir == Direction.down) {
-      vDir == Direction.up;
+    if (posY >= height - diameter - batHeight && vDir == Direction.down) {
+      //check if the bat is here, otherwise loose
+      if (posX >= (batPosition - diameter) &&
+          posX <= (batPosition + batWidth + diameter)) {
+        vDir = Direction.up;
+      } else {
+        animationController.stop();
+        dispose();
+      }
     }
 
     if (posY <= 0 && vDir == Direction.up) {
@@ -52,7 +60,7 @@ class _PongState extends State<Pong> with TickerProviderStateMixin {
         vsync: this, duration: const Duration(minutes: 10000));
     animation = Tween<double>(begin: 0, end: 100).animate(animationController);
     animation.addListener(() {
-      setState(() {
+      safeSetState(() {
         (hDir == Direction.right) ? posX += speed : posX -= speed;
         (vDir == Direction.down) ? posY += speed : posY -= speed;
       });
@@ -85,10 +93,18 @@ class _PongState extends State<Pong> with TickerProviderStateMixin {
     });
   }
 
-  moveBat(DragUpdateDetails details) {
-    setState(() {
+  void moveBat(DragUpdateDetails details) {
+    safeSetState(() {
       batPosition += details.delta.dx;
     });
+  }
+
+  void safeSetState(Function fn) {
+    if (mounted && animationController.isAnimating) {
+      setState(() {
+        fn();
+      });
+    }
   }
 
   @override
