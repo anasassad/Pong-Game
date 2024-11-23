@@ -23,6 +23,7 @@ class _PongState extends State<Pong> with TickerProviderStateMixin {
   final double speed = 5;
   double randX = 1;
   double randY = 1;
+  int score = 0;
 
   late Animation<double> animation;
   late AnimationController animationController;
@@ -47,9 +48,12 @@ class _PongState extends State<Pong> with TickerProviderStateMixin {
           posX <= (batPosition + batWidth + diameter)) {
         vDir = Direction.up;
         randY = randomNumber();
+        safeSetState(() {
+          score++;
+        });
       } else {
         animationController.stop();
-        dispose();
+        showMessage(context);
       }
     }
 
@@ -91,6 +95,7 @@ class _PongState extends State<Pong> with TickerProviderStateMixin {
       batHeight = height / 50;
       return Stack(
         children: [
+          Positioned(top: 0, right: 30, child: Text('Your score is $score')),
           Positioned(top: posY, left: posX, child: const Ball()),
           Positioned(
               bottom: 0,
@@ -123,6 +128,36 @@ class _PongState extends State<Pong> with TickerProviderStateMixin {
     var ran = Random();
     int myNum = ran.nextInt(101);
     return (50 + myNum) / 100;
+  }
+
+  void showMessage(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Game Over'),
+            content: const Text('Would you like to play again ?'),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      posX = 0;
+                      posY = 0;
+                      score = 0;
+                    });
+                    Navigator.of(context).pop();
+                    animationController.repeat();
+                  },
+                  child: const Text('Yes')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    dispose();
+                  },
+                  child: const Text('No'))
+            ],
+          );
+        });
   }
 
   @override
