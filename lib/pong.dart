@@ -28,11 +28,20 @@ class _PongState extends State<Pong> with TickerProviderStateMixin {
   Direction hDir = Direction.right;
 
   checkBoundaries() {
-    if (posX <= 0 && hDir == Direction.left) hDir = Direction.right;
-    if (posX >= width - 50 && hDir == Direction.right) hDir = Direction.left;
+    if (posX <= 0 && hDir == Direction.left) {
+      hDir = Direction.right;
+    }
+    if (posX >= width - 50 && hDir == Direction.right) {
+      hDir = Direction.left;
+    }
 
-    if (posY <= 0 && vDir == Direction.up) vDir == Direction.down;
-    if (posY >= height - 50 && vDir == Direction.down) vDir == Direction.up;
+    if (posY >= height - 50 && vDir == Direction.down) {
+      vDir == Direction.up;
+    }
+
+    if (posY <= 0 && vDir == Direction.up) {
+      vDir = Direction.down;
+    }
   }
 
   @override
@@ -64,9 +73,27 @@ class _PongState extends State<Pong> with TickerProviderStateMixin {
       return Stack(
         children: [
           Positioned(top: posY, left: posX, child: const Ball()),
-          Positioned(bottom: 0, child: Bat(batWidth, batHeight))
+          Positioned(
+              bottom: 0,
+              left: batPosition,
+              child: GestureDetector(
+                onHorizontalDragUpdate: (details) => moveBat(details),
+                child: Bat(batWidth, batHeight),
+              ))
         ],
       );
     });
+  }
+
+  moveBat(DragUpdateDetails details) {
+    setState(() {
+      batPosition += details.delta.dx;
+    });
+  }
+
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
   }
 }
